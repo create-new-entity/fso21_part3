@@ -3,6 +3,8 @@ const app = express();
 
 const PORT = 3001;
 
+app.use(express.json());
+
 let persons = [
   { 
     "id": 1,
@@ -26,15 +28,29 @@ let persons = [
   }
 ];
 
-app.get('/api/persons', (req, res) => {
-  res.json(persons);
-});
 
 app.get('/info', (req, res) => {
   let info = `Phonebook has info for ${persons.length} people`;
   let time = new Date();
   res.send(`<p>${info}</p><p>${time}</p>`);
 });
+
+
+app.get('/api/persons', (req, res) => {
+  res.json(persons);
+});
+
+app.get('/api/persons/:id', (req, res) => {
+  const requestedId = Number(req.params.id);
+
+  const person = persons.find(person => person.id === requestedId);
+  if(person) res.status(200).json(person);
+  else res.status(404).json({
+    'Error': 'Person not found'
+  });
+});
+
+
 
 app.listen(PORT, () => {
   console.log(`Listening on ${PORT}`);
