@@ -1,6 +1,8 @@
 const express = require('express');
 const app = express();
 
+const helperFns = require('./helper');
+
 const PORT = 3001;
 
 app.use(express.json());
@@ -55,6 +57,36 @@ app.delete('/api/persons/:id', (req, res) => {
 
   persons = persons.filter(person => person.id !== requestedId);
   res.status(204).end();
+});
+
+app.post('/api/persons', (req, res) => {
+  const newName = req.body.name;
+  const newNumber = Number(req.body.number);
+
+  if(!newName || !newNumber){
+    res.status(400).json({
+      'Error': 'Name and/or Number missing'
+    });
+    return;
+  }
+
+  let nameAlreadyExists = helperFns.nameAlreadyExists(persons, newName);
+  if(nameAlreadyExists) {
+    res.status(400).json({
+      'Error': 'Person already exists'
+    });
+    return;
+  }
+
+  const newRandomId = helperFns.getRandomId(persons.map(person => person.id));
+  const newPerson = {
+    id: newRandomId,
+    name: newName,
+    number: newNumber
+  };
+  persons = [...persons, newPerson];
+
+  res.status(201).json(newPerson);
 });
 
 
