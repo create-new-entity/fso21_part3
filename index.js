@@ -50,6 +50,12 @@ app.get('/api/persons/:id', (req, res) => {
   });
 });
 
+app.delete('/api/persons/:id', (req, res) => {
+  const requestedId = Number(req.params.id);
+
+  persons = persons.filter(person => person.id !== requestedId);
+  res.status(204).end();
+});
 
 
 app.listen(PORT, () => {
