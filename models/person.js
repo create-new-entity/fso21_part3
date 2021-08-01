@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
 const DB_CONFIG = require('./db_config');
 
 mongoose
@@ -32,9 +33,11 @@ let persons = [
 
 const personSchema = new mongoose.Schema({
   id: Number,
-  name: String,
+  name: { type: String, required: true, unique: true },
   number: String
 });
+
+personSchema.plugin(uniqueValidator);
 
 personSchema.set('toJSON', {
   transform: (document, returnedObject) => {
@@ -93,8 +96,8 @@ const deletePersonsById = (target_id) => {
 const createNewPerson = (newPersonData) => {
   return new Person(newPersonData).save()
     .then(newPerson => newPerson)
-    .catch( _ => {
-      throw new Error('createNewPerson failed');
+    .catch( err => {
+      throw err;
     });
 };
 

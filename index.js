@@ -6,7 +6,6 @@ const dbFns_Person = require('./models/person');
 const app = express();
 
 const helperFns = require('./helper');
-const Person = require('./models/person');
 
 const PORT = process.env.PORT || 3001;
 
@@ -14,7 +13,12 @@ const errorHandler = (err, req, res, next) => {
   console.log(err.name);
   if(err.name === 'TypeError') {
     res.status(400).json({
-      err: 'Invalid id'
+      error: 'Invalid id'
+    });
+  }
+  if(err.name === 'ValidationError') {
+    res.status(400).json({
+      error: err.message
     });
   }
 };
@@ -90,7 +94,7 @@ app.delete('/api/persons/:id', (req, res) => {
     });
 });
 
-app.post('/api/persons', (req, res) => {
+app.post('/api/persons', (req, res, next) => {
   const newName = req.body.name;
   const newNumber = req.body.number;
 
@@ -101,33 +105,17 @@ app.post('/api/persons', (req, res) => {
     return;
   }
 
-  dbFns_Person.getAllPersons()
-    .then(persons => {
-      let nameAlreadyExists = helperFns.nameAlreadyExists(persons, newName);
-      if(nameAlreadyExists) {
-        res.status(400).json({
-          'Error': 'Person already exists'
-        });
-        return;
-      }
+  const newPerson = {
+    name: newName,
+    number: newNumber
+  };
 
-      const newPerson = {
-        name: newName,
-        number: newNumber
-      };
-
-      return dbFns_Person.createNewPerson(newPerson)
-        .then(newPerson => {
-          res.status(201).json(newPerson);
-        })
-        .catch(err => {
-          console.log(err.message);
-          res.status(500).end();
-        });
+  return dbFns_Person.createNewPerson(newPerson)
+    .then(newPerson => {
+      res.status(201).json(newPerson);
     })
-    .catch( err => {
-      console.log(err.message);
-      res.status(500).end();
+    .catch(err => {
+      next(err);
     });
 });
 
