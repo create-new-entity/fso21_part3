@@ -1,4 +1,6 @@
-const mongoose = require("mongoose");
+/* eslint-disable no-undef */
+/* eslint-disable quotes */
+const mongoose = require('mongoose');
 
 const password = process.argv[2];
 const DB_URL = `mongodb+srv://imran_pavel:${password}@gp1.k5n8r.mongodb.net/test?retryWrites=true&w=majority`;
@@ -41,9 +43,7 @@ else if (process.argv.length === 5) {
     name: process.argv[3],
     number: process.argv[4]
   };
-  
   const newPerson = new Person(newPersonData);
-  
   newPerson
     .save()
     .then(result => {

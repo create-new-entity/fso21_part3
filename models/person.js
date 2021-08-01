@@ -1,32 +1,33 @@
-const mongoose = require("mongoose");
-const uniqueValidator = require("mongoose-unique-validator");
-const DB_CONFIG = require("./db_config");
+const mongoose = require('mongoose');
+const uniqueValidator = require('mongoose-unique-validator');
+const DB_CONFIG = require('./db_config');
 
 mongoose
+  // eslint-disable-next-line no-undef
   .connect(process.env.DB_URL, DB_CONFIG)
   .then(() => {
-    console.log("DB Connected");
+    console.log('DB Connected');
   })
   .catch(() => {
-    console.log("DB Connection failed");
+    console.log('DB Connection failed');
   });
 
 let persons = [
   {
-    name: "Arto Hellas",
-    number: "040-123456",
+    name: 'Arto Hellas',
+    number: '040-123456',
   },
   {
-    name: "Ada Lovelace",
-    number: "39-44-5323523",
+    name: 'Ada Lovelace',
+    number: '39-44-5323523',
   },
   {
-    name: "Dan Abramov",
-    number: "12-43-234345",
+    name: 'Dan Abramov',
+    number: '12-43-234345',
   },
   {
-    name: "Mary Poppendieck",
-    number: "39-23-6423122",
+    name: 'Mary Poppendieck',
+    number: '39-23-6423122',
   },
 ];
 
@@ -47,7 +48,7 @@ const personSchema = new mongoose.Schema({
 
 personSchema.plugin(uniqueValidator);
 
-personSchema.set("toJSON", {
+personSchema.set('toJSON', {
   transform: (document, returnedObject) => {
     returnedObject.id = returnedObject._id.toString();
     delete returnedObject._id;
@@ -55,7 +56,7 @@ personSchema.set("toJSON", {
   },
 });
 
-const Person = mongoose.model("Person", personSchema);
+const Person = mongoose.model('Person', personSchema);
 
 const resetPersons = () => {
   return Person.remove({})
@@ -67,15 +68,15 @@ const resetPersons = () => {
       return Promise.all(promises)
         .then(() => {
           return {
-            message: "Person resetting succeeded",
+            message: 'Person resetting succeeded',
           };
         })
         .catch(() => {
-          throw new Error("Person resetting failed");
+          throw new Error('Person resetting failed');
         });
     })
-    .catch((err) => {
-      throw new Error("Something went wrong. Couldn't reset Person.");
+    .catch(() => {
+      throw new Error('Something went wrong. Couldn\'t reset Person.');
     });
 };
 
@@ -83,20 +84,20 @@ const getAllPersons = () => {
   return Person.find({})
     .then((people) => people)
     .catch(() => {
-      throw new Error("getAllPersons failed");
+      throw new Error('getAllPersons failed');
     });
 };
 
 const deletePersonsById = (target_id) => {
   console.log(target_id);
   return Person.deleteMany({ _id: target_id })
-    .then((_) => {
+    .then(() => {
       return {
-        message: "Person(s) deleted",
+        message: 'Person(s) deleted',
       };
     })
-    .catch((_) => {
-      throw new Error("deletePersonsById failed");
+    .catch(() => {
+      throw new Error('deletePersonsById failed');
     });
 };
 
@@ -114,15 +115,15 @@ const findPersonById = (target_id) => {
     .then((person) => person)
     .catch((err) => {
       console.log(err);
-      throw new Error("findPersonById failed");
+      throw new Error('findPersonById failed');
     });
 };
 
 const getNumberOfContacts = () => {
   return getAllPersons()
     .then((people) => people.length)
-    .catch((_) => {
-      throw new Error("getNumberOfContacts failed");
+    .catch(() => {
+      throw new Error('getNumberOfContacts failed');
     });
 };
 

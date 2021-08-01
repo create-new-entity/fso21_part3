@@ -5,11 +5,10 @@ const cors = require('cors');
 const dbFns_Person = require('./models/person');
 const app = express();
 
-const helperFns = require('./helper');
-
+// eslint-disable-next-line no-undef
 const PORT = process.env.PORT || 3001;
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res) => {
   console.log(err.name);
   if(err.name === 'TypeError') {
     res.status(400).json({
@@ -25,7 +24,7 @@ const errorHandler = (err, req, res, next) => {
 
 app.use(cors());
 app.use(express.json());
-morgan.token('request-data', (req, res) => {
+morgan.token('request-data', (req) => {
   return JSON.stringify(req.body);
 });
 morgan.format('mytiny', ':method :url :status :res[content-length] - :response-time ms  :request-data');
@@ -76,7 +75,7 @@ app.get('/api/persons/:id', (req, res) => {
   dbFns_Person.findPersonById(requestedId)
     .then(person => {
       if(!person) res.status(404).end();
-      else res.status(200).json(person)
+      else res.status(200).json(person);
     })
     .catch(err => {
       console.log(err.message);
@@ -86,10 +85,10 @@ app.get('/api/persons/:id', (req, res) => {
 
 app.delete('/api/persons/:id', (req, res) => {
   return dbFns_Person.deletePersonsById(req.params.id)
-    .then( _ => {
+    .then( () => {
       res.status(204).end();
     })
-    .catch(err => {
+    .catch( () => {
       res.status(500).end();
     });
 });
