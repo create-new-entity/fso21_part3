@@ -1,12 +1,3 @@
-const maxId = 5000;
-
-const getRandomId = (existingIds) => {
-  while(true){
-    let newRandomId = Math.floor(Math.random() * maxId);
-    let alreadyExists = existingIds.includes(newRandomId);
-    if(!alreadyExists) return newRandomId;
-  }
-};
 
 const nameAlreadyExists = (persons, newName) => {
   return persons
@@ -15,6 +6,5 @@ const nameAlreadyExists = (persons, newName) => {
 };
 
 module.exports = {
-  getRandomId,
   nameAlreadyExists
 };

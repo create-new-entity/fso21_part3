@@ -1,12 +1,14 @@
+require('dotenv').config();
 const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
+const dbFns_Person = require('./models/person');
 const app = express();
 
 const helperFns = require('./helper');
+const Person = require('./models/person');
 
-const PORT = process.env.PORT || 3001
-
+const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
@@ -17,61 +19,71 @@ morgan.format('mytiny', ':method :url :status :res[content-length] - :response-t
 app.use(morgan('mytiny'));
 app.use(express.static('build'));
 
-let persons = [
-  { 
-    "id": 1,
-    "name": "Arto Hellas", 
-    "number": "040-123456"
-  },
-  { 
-    "id": 2,
-    "name": "Ada Lovelace", 
-    "number": "39-44-5323523"
-  },
-  { 
-    "id": 3,
-    "name": "Dan Abramov", 
-    "number": "12-43-234345"
-  },
-  { 
-    "id": 4,
-    "name": "Mary Poppendieck", 
-    "number": "39-23-6423122"
-  }
-];
+app.get('/api/persons/reset_db', (req, res) => {
+  dbFns_Person
+    .resetPersons()
+    .then(result => {
+      res.json(result);
+    })
+    .catch(err => {
+      res.json({
+        'err': err.message
+      });
+    });
+});
 
 
 app.get('/info', (req, res) => {
-  let info = `Phonebook has info for ${persons.length} people`;
-  let time = new Date();
-  res.send(`<p>${info}</p><p>${time}</p>`);
+  dbFns_Person.getNumberOfContacts()
+    .then(numberOfContacts => {
+      let info = `Phonebook has info for ${numberOfContacts} people`;
+      let time = new Date();
+      res.status(200).send(`<p>${info}</p><p>${time}</p>`);
+    })
+    .catch(err => {
+      console.log(err.message);
+      res.status(500).end();
+    });
 });
 
 
 app.get('/api/persons', (req, res) => {
-  res.json(persons);
+  dbFns_Person.getAllPersons()
+    .then(people => {
+      res.json(people);
+    })
+    .catch(err => {
+      console.log(err.message);
+      res.status(500).end();
+    });
 });
 
 app.get('/api/persons/:id', (req, res) => {
-  const requestedId = Number(req.params.id);
-
-  const person = persons.find(person => person.id === requestedId);
-  if(person) res.status(200).json(person);
-  else res.status(404).json({
-    'Error': 'Person not found'
-  });
+  const requestedId = req.params.id;
+  dbFns_Person.findPersonById(requestedId)
+    .then(person => {
+      if(!person) res.status(404).end();
+      else res.status(200).json(person)
+    })
+    .catch(err => {
+      console.log(err.message);
+      res.status(500).end();
+    });
 });
 
 app.delete('/api/persons/:id', (req, res) => {
-  const requestedId = Number(req.params.id);
-
-  persons = persons.filter(person => person.id !== requestedId);
-  res.status(204).end();
+  return dbFns_Person.deletePersonsById(req.params.id)
+    .then( _ => {
+      res.status(204).end();
+    })
+    .catch(err => {
+      res.status(500).end();
+    });
 });
 
 app.post('/api/persons', (req, res) => {
   const newName = req.body.name;
-  const newNumber = Number(req.body.number);
+  const newNumber = req.body.number;
 
   if(!newName || !newNumber){
     res.status(400).json({
@@ -80,23 +92,45 @@ app.post('/api/persons', (req, res) => {
     return;
   }
 
-  let nameAlreadyExists = helperFns.nameAlreadyExists(persons, newName);
-  if(nameAlreadyExists) {
-    res.status(400).json({
-      'Error': 'Person already exists'
+  dbFns_Person.getAllPersons()
+    .then(persons => {
+      let nameAlreadyExists = helperFns.nameAlreadyExists(persons, newName);
+      if(nameAlreadyExists) {
+        res.status(400).json({
+          'Error': 'Person already exists'
+        });
+        return;
+      }
+
+      const newPerson = {
+        name: newName,
+        number: newNumber
+      };
+
+      return dbFns_Person.createNewPerson(newPerson)
+        .then(newPerson => {
+          res.status(201).json(newPerson);
+        })
+        .catch(err => {
+          console.log(err.message);
+          res.status(500).end();
+        });
+    })
+    .catch( err => {
+      console.log(err.message);
+      res.status(500).end();
     });
-    return;
-  }
+});
 
-  const newRandomId = helperFns.getRandomId(persons.map(person => person.id));
-  const newPerson = {
-    id: newRandomId,
-    name: newName,
-    number: newNumber
-  };
-  persons = [...persons, newPerson];
+app.put('/api/persons/:id', (req, res) => {
+  const target_id = req.params.id;
 
-  res.status(201).json(newPerson);
+  dbFns_Person.updateNumberOfContact(target_id, req.body.number)
+    .then(updatedContact => res.status(200).json(updatedContact))
+    .catch(err => {
+      console.log(err.message);
+      res.status(500).end();
+    });
 });
 
 
