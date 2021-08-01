@@ -10,6 +10,15 @@ const Person = require('./models/person');
 
 const PORT = process.env.PORT || 3001;
 
+const errorHandler = (err, req, res, next) => {
+  console.log(err.name);
+  if(err.name === 'TypeError') {
+    res.status(400).json({
+      err: 'Invalid id'
+    });
+  }
+};
+
 app.use(cors());
 app.use(express.json());
 morgan.token('request-data', (req, res) => {
@@ -122,16 +131,26 @@ app.post('/api/persons', (req, res) => {
     });
 });
 
-app.put('/api/persons/:id', (req, res) => {
+app.put('/api/persons/:id', (req, res, next) => {
   const target_id = req.params.id;
 
   dbFns_Person.updateNumberOfContact(target_id, req.body.number)
-    .then(updatedContact => res.status(200).json(updatedContact))
+    .then(updatedContact => {
+      if(!updatedContact) {
+        res.status(404).end({
+          'err': 'id not found'
+        });
+      }
+      else res.status(200).json(updatedContact);
+    })
     .catch(err => {
-      console.log(err.message);
-      res.status(500).end();
+      next(err);
     });
 });
+
+app.use(errorHandler);
+
+
 
 
 app.listen(PORT, () => {
