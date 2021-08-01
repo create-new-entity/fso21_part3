@@ -116,18 +116,8 @@ const getNumberOfContacts = () => {
 };
 
 const updateNumberOfContact = (target_id, newNumber) => {
-  return Person.findById(target_id)
-    .then(existingPerson => {
-      let updatedPerson = {
-        name: existingPerson.name,
-        number: newNumber
-      };
-      return Person.findOneAndUpdate({ _id: target_id }, updatedPerson, { new: true })
-        .then(updatedContact => updatedContact)
-        .catch( _ => {
-          throw new Error('updateNumberOfContact failed');
-        })
-    })
+  return Person.findByIdAndUpdate(target_id, { number: newNumber }, { new: true })
+    .then(updatedContact => updatedContact)
     .catch( _ => {
       throw new Error('updateNumberOfContact failed');
     });
