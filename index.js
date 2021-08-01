@@ -15,6 +15,7 @@ morgan.token('request-data', (req, res) => {
 });
 morgan.format('mytiny', ':method :url :status :res[content-length] - :response-time ms  :request-data');
 app.use(morgan('mytiny'));
+app.use(express.static('build'));
 
 let persons = [
   { 
