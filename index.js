@@ -1,5 +1,6 @@
 const express = require('express');
 const morgan = require('morgan');
+const cors = require('cors');
 const app = express();
 
 const helperFns = require('./helper');
@@ -7,6 +8,7 @@ const helperFns = require('./helper');
 const PORT = 3001;
 
 
+app.use(cors());
 app.use(express.json());
 morgan.token('request-data', (req, res) => {
   return JSON.stringify(req.body);
